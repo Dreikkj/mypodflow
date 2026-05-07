@@ -1,0 +1,1567 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>myPodFlow — Grave uma vez. Distribua em todos os canais.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #06060f;
+      --bg2: #0b0d1a;
+      --bg3: #0f1125;
+      --panel: rgba(255,255,255,.04);
+      --panel2: rgba(255,255,255,.065);
+      --line: rgba(255,255,255,.09);
+      --line2: rgba(108,99,255,.25);
+      --text: #e8ebff;
+      --muted: #7a86b8;
+      --muted2: #a0aad0;
+      --primary: #6c63ff;
+      --primary-dim: rgba(108,99,255,.15);
+      --primary-glow: rgba(108,99,255,.35);
+      --cyan: #45d6ff;
+      --cyan-dim: rgba(69,214,255,.1);
+      --ok: #22c55e;
+      --ok-dim: rgba(34,197,94,.15);
+      --err: #fb7185;
+      --gold: #f59e0b;
+      --gold-dim: rgba(245,158,11,.15);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Sora', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea, select { font: inherit; }
+
+    /* ── BACKGROUND MESH ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 900px 600px at 15% -10%, rgba(108,99,255,.12) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 400px at 85% 110%, rgba(69,214,255,.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── LAYOUT ── */
+    .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* ── NAV ── */
+    .top {
+      position: sticky; top: 0;
+      backdrop-filter: blur(20px) saturate(1.5);
+      -webkit-backdrop-filter: blur(20px) saturate(1.5);
+      background: rgba(6,6,15,.82);
+      border-bottom: 1px solid var(--line);
+      z-index: 100;
+    }
+    .top-row { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 16px; }
+    .logo {
+      font-weight: 800; font-size: 20px; cursor: pointer; letter-spacing: -.5px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .logo-icon {
+      width: 32px; height: 32px; background: linear-gradient(135deg, var(--primary), #45d6ff);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+    .logo span { color: var(--primary); }
+    .nav { display: flex; gap: 4px; }
+    .nav button {
+      background: transparent; color: var(--muted); border: none; cursor: pointer;
+      padding: 8px 14px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+      transition: all .2s;
+    }
+    .nav button.active, .nav button:hover { color: var(--text); background: var(--panel2); }
+    .nav-auth { display: flex; gap: 8px; align-items: center; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      border: 1px solid var(--line); background: var(--panel); color: var(--text);
+      border-radius: var(--radius-sm); padding: 10px 18px; cursor: pointer;
+      font-size: 14px; font-weight: 500; transition: all .2s ease; white-space: nowrap;
+    }
+    .btn:hover { background: var(--panel2); border-color: var(--line2); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+    .btn.p {
+      border: none; background: linear-gradient(135deg, var(--primary) 0%, #8c5bff 100%);
+      color: #fff; box-shadow: 0 4px 20px rgba(108,99,255,.35);
+    }
+    .btn.p:hover { box-shadow: 0 6px 28px rgba(108,99,255,.55); background: linear-gradient(135deg, #7a72ff 0%, #9b6aff 100%); }
+    .btn.discord { background: #5865f2; border: none; color: #fff; }
+    .btn.discord:hover { background: #6875f5; box-shadow: 0 4px 20px rgba(88,101,242,.4); }
+    .btn.outline { background: transparent; border-color: var(--line2); color: var(--primary); }
+    .btn.outline:hover { background: var(--primary-dim); }
+    .btn.sm { padding: 7px 13px; font-size: 13px; }
+    .btn.lg { padding: 14px 28px; font-size: 15px; font-weight: 600; border-radius: var(--radius); }
+
+    /* ── PAGES ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── SECTION / TYPOGRAPHY ── */
+    .section { padding: 52px 0; }
+    .section-sm { padding: 28px 0; }
+    .section-header { text-align: center; margin-bottom: 44px; }
+    .section-header .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px;
+      border: 1px solid var(--line2); border-radius: 999px; background: var(--primary-dim);
+      color: var(--primary); font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .section-header h2 { font-size: clamp(26px,4vw,42px); font-weight: 800; margin: 0 0 14px; line-height: 1.1; letter-spacing: -.5px; }
+    .section-header p { color: var(--muted2); max-width: 580px; margin: 0 auto; font-size: 16px; }
+    .title { font-size: 28px; font-weight: 800; margin: 0 0 6px; letter-spacing: -.4px; }
+
+    /* ── PILL ── */
+    .pill {
+      display: inline-flex; gap: 8px; align-items: center; padding: 7px 16px;
+      border: 1px solid var(--line2); border-radius: 999px; background: var(--primary-dim);
+      color: #b0b8ff; font-size: 12px; font-weight: 600; letter-spacing: .04em;
+      margin-bottom: 24px;
+    }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 100px 0 68px; text-align: center; position: relative;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--line2), transparent);
+    }
+    .hero h1 {
+      font-size: clamp(36px,6.5vw,72px); line-height: 1.0; max-width: 880px;
+      margin: 0 auto 20px; font-weight: 800; letter-spacing: -1.5px;
+    }
+    .hero h1 em { font-style: normal; color: var(--primary); }
+    .hero h1 .grad { background: linear-gradient(135deg, var(--cyan), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { max-width: 640px; margin: 0 auto; color: var(--muted2); font-size: 17px; line-height: 1.65; }
+    .hero-cta { display: flex; gap: 12px; justify-content: center; margin-top: 32px; flex-wrap: wrap; }
+    .hero-badges { display: flex; gap: 24px; justify-content: center; margin-top: 40px; flex-wrap: wrap; }
+    .hero-badge { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+    .hero-badge svg { opacity: .7; }
+
+    /* ── GRID LAYOUTS ── */
+    .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px;
+    }
+    .card.glow { border-color: var(--line2); background: rgba(108,99,255,.06); }
+    .card.featured { border-color: var(--primary); background: rgba(108,99,255,.08); position: relative; }
+    .card.featured::before {
+      content: 'MAIS POPULAR';
+      position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+      background: var(--primary); color: #fff; font-size: 10px; font-weight: 700;
+      letter-spacing: .08em; padding: 4px 14px; border-radius: 0 0 10px 10px;
+    }
+
+    /* ── FEATURE CARDS ── */
+    .feature-card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px;
+      transition: all .25s ease;
+    }
+    .feature-card:hover { border-color: var(--line2); background: var(--panel2); transform: translateY(-3px); }
+    .feature-card .icon {
+      width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 16px; border: 1px solid var(--line);
+    }
+    .feature-card h3 { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
+    .feature-card p { margin: 0; color: var(--muted2); font-size: 14px; line-height: 1.6; }
+
+    /* ── STEPS ── */
+    .steps-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; counter-reset: step; }
+    .step {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px;
+      position: relative; counter-increment: step;
+    }
+    .step::before {
+      content: counter(step);
+      position: absolute; top: 20px; right: 20px;
+      font-size: 36px; font-weight: 800; color: rgba(108,99,255,.15); font-family: 'JetBrains Mono', monospace;
+    }
+    .step h3 { margin: 0 0 8px; font-size: 15px; font-weight: 700; }
+    .step p { margin: 0; color: var(--muted2); font-size: 14px; }
+
+    /* ── FORMAT PILLS ── */
+    .format-pill {
+      display: flex; align-items: center; gap: 12px; background: var(--panel);
+      border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px;
+      transition: all .2s;
+    }
+    .format-pill:hover { border-color: var(--line2); }
+    .format-pill .icon { font-size: 22px; }
+    .format-pill strong { display: block; font-size: 14px; }
+    .format-pill span { color: var(--muted); font-size: 13px; }
+
+    /* ── AUDIENCE ── */
+    .audience-card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px;
+      display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600;
+      transition: all .2s;
+    }
+    .audience-card:hover { border-color: var(--line2); transform: translateY(-2px); }
+    .audience-card .ic { font-size: 22px; }
+
+    /* ── PLANS ── */
+    .plans { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    .plan-card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px;
+      display: flex; flex-direction: column; transition: all .25s;
+    }
+    .plan-card:hover { transform: translateY(-4px); }
+    .plan-card.featured { border-color: var(--primary); background: rgba(108,99,255,.07); position: relative; }
+    .plan-card.featured::before {
+      content: '✦ MAIS POPULAR';
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      background: var(--primary); color: #fff; font-size: 10px; font-weight: 700;
+      letter-spacing: .1em; padding: 5px 16px; border-radius: 999px; white-space: nowrap;
+    }
+    .plan-name { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .plan-price { font-size: 42px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin: 8px 0 4px; }
+    .plan-price sup { font-size: 18px; font-weight: 600; vertical-align: super; }
+    .plan-period { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+    .plan-tagline { font-size: 14px; color: var(--muted2); margin-bottom: 20px; }
+    .plan-divider { height: 1px; background: var(--line); margin: 16px 0; }
+    .plan-section-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .plan-features { list-style: none; padding: 0; margin: 0 0 20px; display: flex; flex-direction: column; gap: 9px; }
+    .plan-features li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--muted2); }
+    .plan-features li .chk { color: var(--ok); font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .plan-features li .x { color: var(--muted); font-size: 14px; flex-shrink: 0; opacity: .5; margin-top: 1px; }
+    .plan-cta { margin-top: auto; }
+    .plan-for { background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
+    .plan-for-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .plan-for-text { font-size: 13px; color: var(--muted2); }
+
+    /* ── TRUST BADGES ── */
+    .trust-grid { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .trust-badge {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border: 1px solid var(--line); border-radius: 10px;
+      font-size: 13px; font-weight: 500; color: var(--muted2); background: var(--panel);
+    }
+    .trust-badge .ic { font-size: 16px; }
+
+    /* ── KPI CARDS ── */
+    .kpi { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+    .kpi-card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px;
+    }
+    .kpi-card .kpi-val { font-size: 28px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 4px; }
+    .kpi-card .kpi-label { color: var(--muted); font-size: 13px; }
+
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      border: 2px dashed var(--line); border-radius: var(--radius); padding: 40px 28px;
+      text-align: center; transition: all .25s; background: rgba(108,99,255,.03);
+    }
+    .upload-zone:hover { border-color: var(--primary-glow); background: var(--primary-dim); }
+    .upload-zone .up-icon { font-size: 40px; margin-bottom: 12px; }
+    .upload-zone h3 { margin: 0 0 8px; font-size: 18px; font-weight: 700; }
+    .upload-zone p { color: var(--muted2); margin: 0 0 20px; font-size: 14px; }
+    .upload-inputs { display: flex; flex-direction: column; gap: 10px; max-width: 480px; margin: 0 auto; }
+    .field-input {
+      width: 100%; padding: 11px 16px; border-radius: var(--radius-sm);
+      border: 1px solid var(--line); background: rgba(0,0,0,.3); color: var(--text);
+      font-size: 14px; transition: all .2s;
+    }
+    .field-input:focus { outline: none; border-color: var(--primary); background: rgba(108,99,255,.08); }
+    .field-input::placeholder { color: var(--muted); }
+
+    /* ── PROGRESS ── */
+    .progress { height: 6px; background: rgba(255,255,255,.07); border-radius: 999px; overflow: hidden; }
+    .progress > span { display: block; height: 100%; background: linear-gradient(90deg, var(--primary), var(--cyan)); border-radius: 999px; transition: width .4s ease; }
+
+    /* ── STATUS PILLS ── */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px;
+      border-radius: 999px; font-size: 12px; font-weight: 600;
+      border: 1px solid var(--line); background: var(--panel);
+    }
+    .status-pill.done { background: var(--ok-dim); border-color: rgba(34,197,94,.3); color: var(--ok); }
+    .status-pill.processing { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.3); color: var(--gold); }
+    .status-pill.error { background: rgba(251,113,133,.12); border-color: rgba(251,113,133,.3); color: var(--err); }
+
+    /* ── HISTORY ITEM ── */
+    .history-item {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px;
+      margin-bottom: 10px; transition: all .2s;
+    }
+    .history-item:hover { border-color: var(--line2); }
+    .history-item strong { font-size: 15px; font-weight: 700; }
+
+    /* ── RESULT TABS ── */
+    .result-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .result-panel { border: 1px solid var(--line); border-radius: 12px; padding: 16px; background: rgba(0,0,0,.2); }
+    .result pre { white-space: pre-wrap; background: rgba(0,0,0,.3); border: 1px solid var(--line); padding: 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; }
+    .copy-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .short-card video { width: 100%; max-width: 300px; border-radius: 10px; border: 1px solid var(--line); background: #000; }
+
+    /* ── TOGGLE ── */
+    .toggle {
+      display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px;
+      border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.03);
+      max-width: 480px; margin: 12px auto 0; text-align: left; cursor: pointer;
+    }
+    .toggle input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--primary); flex-shrink: 0; }
+
+    /* ── PIX ── */
+    .pix { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .pix select, .pix textarea { width: 100%; padding: 11px 14px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: rgba(0,0,0,.3); color: var(--text); font-size: 14px; }
+    .pix select:focus, .pix textarea:focus { outline: none; border-color: var(--primary); }
+
+    /* ── AUTH ── */
+    .auth { max-width: 440px; margin: 52px auto; }
+    .auth .card { padding: 36px; }
+    .auth h2 { margin: 0 0 6px; font-size: 26px; font-weight: 800; }
+    .field { margin-bottom: 12px; }
+    .field input { width: 100%; padding: 11px 16px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: rgba(0,0,0,.3); color: var(--text); font-size: 14px; transition: all .2s; }
+    .field input:focus { outline: none; border-color: var(--primary); background: rgba(108,99,255,.06); }
+    .field textarea { width: 100%; padding: 11px 16px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: rgba(0,0,0,.3); color: var(--text); font-size: 14px; resize: vertical; }
+    .error { color: var(--err); font-size: 13px; margin-bottom: 8px; padding: 10px 14px; background: rgba(251,113,133,.08); border: 1px solid rgba(251,113,133,.25); border-radius: 8px; }
+    .ok { color: var(--ok); font-size: 13px; }
+
+    /* ── APP LAYOUT ── */
+    .app { display: grid; grid-template-columns: 220px 1fr; gap: 16px; padding: 24px 0 40px; }
+    .side {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 16px; height: fit-content; position: sticky; top: 84px;
+    }
+    .side-section-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 6px 10px 4px; }
+    .side button {
+      display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 12px;
+      border-radius: 10px; border: none; background: transparent; color: var(--muted2);
+      font-size: 14px; font-weight: 500; cursor: pointer; text-align: left; margin-bottom: 2px;
+      transition: all .15s;
+    }
+    .side button:hover { background: var(--panel2); color: var(--text); }
+    .side button.active { background: var(--primary-dim); color: var(--primary); }
+    .side .side-divider { height: 1px; background: var(--line); margin: 10px 4px; }
+    .side .side-logo { display: flex; align-items: center; gap: 8px; padding: 10px 10px 14px; font-weight: 700; font-size: 15px; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+    .side .side-logo span { color: var(--primary); }
+    .main { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; min-height: 500px; }
+    .view-title { font-size: 22px; font-weight: 800; margin: 0 0 20px; letter-spacing: -.4px; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .empty-state .empty-icon { font-size: 48px; opacity: .4; }
+    .empty-state h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--muted2); }
+    .empty-state p { margin: 0; color: var(--muted); font-size: 14px; max-width: 320px; }
+
+    /* ── FAQ ── */
+    .faq details {
+      margin-bottom: 8px; border: 1px solid var(--line); border-radius: 12px;
+      overflow: hidden; transition: all .2s;
+    }
+    .faq details[open] { border-color: var(--line2); }
+    .faq summary {
+      padding: 16px 20px; font-size: 15px; font-weight: 600; cursor: pointer;
+      list-style: none; display: flex; justify-content: space-between; align-items: center;
+    }
+    .faq summary::after { content: '+'; font-size: 18px; color: var(--primary); }
+    .faq details[open] summary::after { content: '−'; }
+    .faq details p { padding: 0 20px 16px; margin: 0; color: var(--muted2); font-size: 14px; line-height: 1.7; }
+
+    /* ── ADMIN ── */
+    .admin-badge {
+      font-size: 11px; background: var(--gold-dim); border: 1px solid rgba(245,158,11,.3);
+      color: var(--gold); padding: 4px 9px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 40px 0; color: var(--muted); border-top: 1px solid var(--line); margin-top: 60px;
+    }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: gap; gap: 16px; }
+    .footer-brand { font-weight: 700; font-size: 15px; }
+    .footer-brand span { color: var(--primary); }
+    .footer-links { display: flex; gap: 20px; font-size: 13px; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-credit { font-size: 12px; color: var(--muted); }
+
+    /* ── MUTED ── */
+    .muted { color: var(--muted); }
+    .muted2 { color: var(--muted2); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .page.active .hero > * { animation: fadeUp .5s ease both; }
+    .page.active .hero .pill { animation-delay: .05s; }
+    .page.active .hero h1 { animation-delay: .12s; }
+    .page.active .hero p { animation-delay: .2s; }
+    .page.active .hero-cta { animation-delay: .28s; }
+    .page.active .hero-badges { animation-delay: .36s; }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:960px) {
+      .grid-3, .steps-grid, .plans { grid-template-columns: 1fr 1fr; }
+      .grid-4, .kpi { grid-template-columns: 1fr 1fr; }
+      .app { grid-template-columns: 1fr; }
+      .side { position: static; display: flex; flex-wrap: wrap; gap: 4px; }
+      .side .side-logo, .side .side-section-label, .side .side-divider { display: none; }
+      .side button { width: auto; }
+      .pix { grid-template-columns: 1fr; }
+    }
+    @media(max-width:640px) {
+      .grid-3, .steps-grid, .plans, .grid-4, .kpi, .grid-2 { grid-template-columns: 1fr; }
+      .hero { padding: 60px 0 48px; }
+      .hero h1 { font-size: 34px; }
+      .nav { display: none; }
+      .section { padding: 36px 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <header class="top">
+    <div class="wrap top-row">
+      <div class="logo" onclick="go('landing')">
+        <div class="logo-icon">🎙</div>
+        my<span>PodFlow</span>
+      </div>
+      <nav class="nav">
+        <button data-nav="landing" onclick="go('landing')">Início</button>
+        <button data-nav="plans" onclick="go('plans')">Planos</button>
+        <button data-nav="faq" onclick="go('faq')">FAQ</button>
+      </nav>
+      <div id="navAuth" class="nav-auth">
+        <button class="btn" onclick="go('auth')">Entrar</button>
+        <button class="btn p" onclick="go('auth','signup')">Começar agora →</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- ══════════════════════════════
+         LANDING PAGE
+    ══════════════════════════════ -->
+    <section id="page-landing" class="page active">
+
+      <!-- HERO -->
+      <div class="hero">
+        <div class="pill"><span class="pill-dot"></span>IA especializada em conteúdo de podcast</div>
+        <h1>Grave uma vez.<br><span class="grad">Distribua em todos os canais.</span></h1>
+        <p>Envie áudio, vídeo ou link. O myPodFlow transcreve, entende o contexto, encontra os melhores momentos e entrega blog, threads, newsletter e shorts prontos para postar.</p>
+        <div class="hero-cta">
+          <button class="btn p lg" onclick="go('auth','signup')">🚀 Transformar meu podcast</button>
+          <button class="btn lg" onclick="go('plans')">Ver planos</button>
+          <button class="btn discord lg" onclick="openDiscord()">💬 Entrar no Discord</button>
+        </div>
+        <div class="hero-badges">
+          <div class="hero-badge">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            OpenAI Powered
+          </div>
+          <div class="hero-badge">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Foco em BR
+          </div>
+          <div class="hero-badge">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Suporte via Discord
+          </div>
+          <div class="hero-badge">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            PIX Seguro
+          </div>
+        </div>
+      </div>
+
+      <!-- O QUE FAZ -->
+      <div class="section">
+        <div class="section-header">
+          <div class="eyebrow">⚙️ Como funciona</div>
+          <h2>Pipeline completo de conteúdo<br>em menos de 5 minutos</h2>
+          <p>Do áudio bruto ao conteúdo publicável — sem edição manual, sem equipe grande.</p>
+        </div>
+        <div class="grid-3">
+          <div class="feature-card">
+            <div class="icon" style="background:rgba(108,99,255,.12);border-color:var(--line2)">🎤</div>
+            <h3>Transcrição com Whisper</h3>
+            <p>Whisper da OpenAI transforma áudio/vídeo em texto limpo com timestamps para toda a pipeline de conteúdo.</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon" style="background:rgba(69,214,255,.1);border-color:rgba(69,214,255,.2)">🧠</div>
+            <h3>IA que entende contexto</h3>
+            <p>A IA identifica ideias fortes, ganchos narrativos e momentos com alto potencial de retenção e viralização.</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.2)">📦</div>
+            <h3>Conteúdo pronto para postar</h3>
+            <p>Blog SEO, thread, newsletter, hooks, títulos e shorts MP4 com legenda automática em uma única operação.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEPS -->
+      <div class="section">
+        <div class="section-header">
+          <div class="eyebrow">📋 Passo a passo</div>
+          <h2>6 passos, resultado completo</h2>
+          <p>Processo automatizado do início ao fim. Você faz o upload, a IA faz o resto.</p>
+        </div>
+        <div class="steps-grid">
+          <div class="step">
+            <h3>Upload do episódio</h3>
+            <p>Envie áudio (.mp3, .wav, .m4a), vídeo (.mp4) ou cole um link do YouTube/Spotify.</p>
+          </div>
+          <div class="step">
+            <h3>Transcrição automática</h3>
+            <p>OpenAI Whisper transcreve com timestamps. Suporte completo ao português brasileiro.</p>
+          </div>
+          <div class="step">
+            <h3>Análise de conteúdo</h3>
+            <p>A IA mapeia os melhores momentos, ganchos e ideias com maior potencial de engajamento.</p>
+          </div>
+          <div class="step">
+            <h3>Geração de formatos</h3>
+            <p>Blog, thread, newsletter, hooks e títulos otimizados são gerados automaticamente.</p>
+          </div>
+          <div class="step">
+            <h3>Shorts verticais</h3>
+            <p>Cortes 9:16 com legenda sincronizada exportados em MP4 prontos para TikTok e Reels.</p>
+          </div>
+          <div class="step">
+            <h3>Baixe e publique</h3>
+            <p>Copie, baixe e distribua em todos os canais. Suporte humano no Discord se precisar.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORMATOS -->
+      <div class="section">
+        <div class="section-header">
+          <div class="eyebrow">📤 Formatos de saída</div>
+          <h2>Tudo que você precisa para<br>distribuir em múltiplos canais</h2>
+        </div>
+        <div class="grid-3">
+          <div class="format-pill"><span class="icon">📝</span><div><strong>Blog / Artigo SEO</strong><span>Para site e busca orgânica</span></div></div>
+          <div class="format-pill"><span class="icon">🧵</span><div><strong>Thread para X / Twitter</strong><span>Para tração e autoridade</span></div></div>
+          <div class="format-pill"><span class="icon">📧</span><div><strong>Newsletter</strong><span>Resumo editorial semanal</span></div></div>
+          <div class="format-pill"><span class="icon">🎬</span><div><strong>Shorts / Reels MP4</strong><span>Vídeos 9:16 com legenda</span></div></div>
+          <div class="format-pill"><span class="icon">📄</span><div><strong>Transcrição completa</strong><span>Base para reaproveitar trechos</span></div></div>
+          <div class="format-pill"><span class="icon">🪝</span><div><strong>Hooks e títulos</strong><span>Para melhorar CTR e retenção</span></div></div>
+        </div>
+      </div>
+
+      <!-- SHORTS DESTAQUE -->
+      <div class="section">
+        <div class="section-header">
+          <div class="eyebrow">🎬 Shorts automáticos</div>
+          <h2>Cortes virais gerados pela IA</h2>
+          <p>A IA identifica os melhores momentos do episódio e gera vídeos verticais prontos para publicação.</p>
+        </div>
+        <div class="card glow" style="max-width:680px;margin:0 auto;padding:28px">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px">
+              <span style="font-size:20px">✂️</span>
+              <div><strong style="font-size:14px">Corte inteligente por timestamp</strong><p class="muted" style="margin:2px 0 0;font-size:13px">Seleciona os momentos com maior potencial de retenção automaticamente.</p></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px">
+              <span style="font-size:20px">📐</span>
+              <div><strong style="font-size:14px">Conversão vertical 1080×1920</strong><p class="muted" style="margin:2px 0 0;font-size:13px">Composição otimizada para vídeo horizontal original — sem tela preta.</p></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px">
+              <span style="font-size:20px">💬</span>
+              <div><strong style="font-size:14px">Legenda automática sincronizada</strong><p class="muted" style="margin:2px 0 0;font-size:13px">Exporta MP4 pronto para TikTok, Instagram Reels e YouTube Shorts.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PARA QUEM -->
+      <div class="section">
+        <div class="section-header">
+          <div class="eyebrow">👥 Público</div>
+          <h2>Para quem é o myPodFlow?</h2>
+        </div>
+        <div class="grid-3">
+          <div class="audience-card"><span class="ic">🎙</span>Podcasters</div>
+          <div class="audience-card"><span class="ic">📱</span>Creators</div>
+          <div class="audience-card"><span class="ic">🎮</span>Streamers</div>
+          <div class="audience-card"><span class="ic">🏢</span>Agências de conteúdo</div>
+          <div class="audience-card"><span class="ic">📚</span>Infoprodutores</div>
+          <div class="audience-card"><span class="ic">⭐</span>Marcas pessoais</div>
+        </div>
+      </div>
+
+      <!-- POR QUE -->
+      <div class="section">
+        <div class="section-header">
+          <div class="eyebrow">💡 Benefícios</div>
+          <h2>Por que usar o myPodFlow?</h2>
+        </div>
+        <div class="grid-4">
+          <div class="feature-card" style="text-align:center">
+            <div style="font-size:32px;margin-bottom:12px">⏰</div>
+            <h3>Economize horas</h3>
+            <p>Elimine horas semanais de edição, redação e formatação de conteúdo.</p>
+          </div>
+          <div class="feature-card" style="text-align:center">
+            <div style="font-size:32px;margin-bottom:12px">📡</div>
+            <h3>Múltiplos canais</h3>
+            <p>Publique com consistência em blog, redes sociais, e-mail e vídeo ao mesmo tempo.</p>
+          </div>
+          <div class="feature-card" style="text-align:center">
+            <div style="font-size:32px;margin-bottom:12px">💎</div>
+            <h3>Mais valor por episódio</h3>
+            <p>Extraia o máximo de cada gravação com formatos diferentes de distribuição.</p>
+          </div>
+          <div class="feature-card" style="text-align:center">
+            <div style="font-size:32px;margin-bottom:12px">📈</div>
+            <h3>Escale sem equipe</h3>
+            <p>Ganhe consistência e autoridade em escala sem contratar uma equipe de produção.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOBRE / MISSÃO -->
+      <div class="section">
+        <div class="section-header">
+          <div class="eyebrow">🏢 Sobre</div>
+          <h2>Nossa missão</h2>
+          <p>Ajudar creators e empresas brasileiras a escalar presença digital com inteligência artificial acessível e suporte humano real.</p>
+        </div>
+        <div class="grid-2" style="max-width:800px;margin:0 auto">
+          <div class="card" style="padding:28px">
+            <div style="font-size:28px;margin-bottom:12px">🇧🇷</div>
+            <h3 style="margin:0 0 8px;font-size:16px">Feito para o Brasil</h3>
+            <p class="muted2" style="margin:0;font-size:14px">IA otimizada para português brasileiro. Compreensão cultural e linguística que produtos gringos não têm.</p>
+          </div>
+          <div class="card" style="padding:28px">
+            <div style="font-size:28px;margin-bottom:12px">🤝</div>
+            <h3 style="margin:0 0 8px;font-size:16px">Suporte humano real</h3>
+            <p class="muted2" style="margin:0;font-size:14px">Suporte oficial via Discord com resposta rápida. Não somos uma caixa preta — estamos aqui para ajudar.</p>
+          </div>
+        </div>
+        <div class="trust-grid" style="margin-top:24px">
+          <div class="trust-badge"><span class="ic">🤖</span>OpenAI Whisper</div>
+          <div class="trust-badge"><span class="ic">💬</span>Suporte no Discord</div>
+          <div class="trust-badge"><span class="ic">💚</span>PIX Manual Seguro</div>
+          <div class="trust-badge"><span class="ic">🇧🇷</span>Feito para creators BR</div>
+          <div class="trust-badge"><span class="ic">🔒</span>Dados protegidos</div>
+        </div>
+      </div>
+
+      <!-- CTA FINAL -->
+      <div class="section" style="text-align:center;padding-bottom:68px">
+        <div class="card glow" style="max-width:640px;margin:0 auto;padding:48px 36px">
+          <div style="font-size:40px;margin-bottom:16px">🚀</div>
+          <h2 style="margin:0 0 12px;font-size:28px;font-weight:800">Pronto para escalar seu podcast?</h2>
+          <p class="muted2" style="margin:0 0 28px">Comece agora. Sem contrato, sem burocracia. Cancele quando quiser.</p>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            <button class="btn p lg" onclick="go('auth','signup')">🚀 Criar minha conta</button>
+            <button class="btn lg" onclick="go('plans')">Ver planos →</button>
+          </div>
+          <p style="margin:20px 0 0;font-size:12px;color:var(--muted)">© 2026 myPodFlow Technologies. Criado por Eslem Marques.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ══════════════════════════════
+         PLANOS
+    ══════════════════════════════ -->
+    <section id="page-plans" class="page">
+      <div class="section">
+        <div class="section-header">
+          <div class="eyebrow">💳 Planos</div>
+          <h2>Escolha o plano ideal para você</h2>
+          <p>Pagamento via PIX. Após pagar, abra um ticket no Discord com o comprovante — ativação em minutos.</p>
+        </div>
+
+        <div class="plans" id="plansGrid"><!-- renderizado via JS --></div>
+
+        <div class="card" style="margin-top:20px;padding:24px;max-width:680px;margin-left:auto;margin-right:auto">
+          <div style="display:flex;align-items:flex-start;gap:16px">
+            <span style="font-size:28px">💚</span>
+            <div>
+              <strong style="font-size:15px">Checkout simples e humano</strong>
+              <p class="muted2" style="margin:6px 0 12px;font-size:14px">Escolha o plano → Copie o PIX → Clique "Já paguei" → Envie comprovante no Discord → Aprovação manual em minutos.</p>
+              <button class="btn discord" onclick="openDiscord()">💬 Abrir Discord suporte</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         FAQ
+    ══════════════════════════════ -->
+    <section id="page-faq" class="page">
+      <div class="section">
+        <div class="section-header">
+          <div class="eyebrow">❓ FAQ</div>
+          <h2>Perguntas frequentes</h2>
+          <p>Tem uma dúvida que não está aqui? Fale com a gente no Discord.</p>
+        </div>
+        <div class="faq" style="max-width:720px;margin:0 auto">
+          <details><summary>Como funciona o myPodFlow?</summary><p>Você envia áudio/vídeo/link do episódio e a IA transcreve com Whisper, identifica os melhores momentos e entrega blog, thread, newsletter, hooks e shorts prontos para publicação.</p></details>
+          <details><summary>Preciso editar manualmente?</summary><p>Não obrigatoriamente. Você já recebe uma versão pronta para publicação. Pode ajustar detalhes se quiser, mas o produto está usável do jeito que sai.</p></details>
+          <details><summary>Gera vídeo (Shorts/Reels) de verdade?</summary><p>Sim. O sistema identifica os melhores cortes com base em timestamps e contexto, converte para formato vertical 9:16 com legenda automática e exporta em MP4.</p></details>
+          <details><summary>Funciona com links do YouTube?</summary><p>Sim, o sistema tenta baixar o áudio/vídeo do link para processar. Também suporta links do Spotify e outros serviços públicos.</p></details>
+          <details><summary>Funciona em português?</summary><p>Sim, foco principal em português brasileiro. A transcrição e toda a geração de conteúdo são otimizadas para PT-BR.</p></details>
+          <details><summary>Como funciona o pagamento?</summary><p>Pagamento via PIX manual por plano. Sem assinatura automática, sem cobrança surpresa. Você paga, envia o comprovante e o plano é ativado manualmente.</p></details>
+          <details><summary>Como libero meu plano após o PIX?</summary><p>Após pagar, clique em "Já paguei" no painel, depois abra um ticket no Discord enviando o comprovante. A aprovação é feita manualmente em minutos.</p></details>
+          <details><summary>O suporte é onde?</summary><p>Suporte oficial no Discord: <a href="https://discord.gg/kzE62vDz4j" target="_blank" rel="noreferrer" style="color:var(--primary)">discord.gg/kzE62vDz4j</a>. Resposta rápida, suporte humano real.</p></details>
+          <details><summary>Posso cancelar quando quiser?</summary><p>Sim. Como o modelo é por plano avulso via PIX, não há cancelamento de assinatura — você simplesmente não renova quando acabar o período.</p></details>
+        </div>
+        <div style="text-align:center;margin-top:36px">
+          <button class="btn discord" onclick="openDiscord()">💬 Falar no Discord</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         AUTH
+    ══════════════════════════════ -->
+    <section id="page-auth" class="page">
+      <div class="auth">
+        <div class="card">
+          <div style="text-align:center;margin-bottom:24px">
+            <div style="font-size:32px;margin-bottom:8px">🎙</div>
+            <h2 id="authTitle">Entrar</h2>
+            <p class="muted" id="authSubtitle" style="margin:4px 0 0;font-size:14px">Acesse sua conta para continuar.</p>
+          </div>
+          <div id="authError" class="error" style="display:none"></div>
+          <div class="field" id="nameField" style="display:none"><input id="nameInput" placeholder="Seu nome completo" class="field-input"></div>
+          <div class="field"><input id="emailInput" placeholder="Seu email" class="field-input"></div>
+          <div class="field"><input id="passwordInput" type="password" placeholder="Sua senha" class="field-input"></div>
+          <button class="btn p" id="authBtn" onclick="submitAuth()" style="width:100%;padding:13px;font-size:15px">Entrar →</button>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn" onclick="googleLogin()" style="flex:1">🔑 Entrar com Google</button>
+            <button class="btn" onclick="go('forgot')" style="flex:1">Esqueci a senha</button>
+          </div>
+          <p class="muted" style="text-align:center;margin-top:16px;font-size:13px" id="authSwitch">Não tem conta? <a href="#" onclick="toggleAuth();return false;" style="color:var(--primary);font-weight:600">Criar agora</a></p>
+          <p style="text-align:center;margin-top:20px;font-size:11px;color:var(--muted)">Criado por Eslem Marques · myPodFlow Technologies © 2026</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORGOT / RESET -->
+    <section id="page-forgot" class="page">
+      <div class="auth">
+        <div class="card">
+          <h2>Recuperar senha</h2>
+          <p class="muted" style="font-size:14px;margin:4px 0 20px">Digite seu email e enviaremos as instruções.</p>
+          <div class="field"><input id="forgotEmail" placeholder="Seu email" class="field-input"></div>
+          <button class="btn p" onclick="forgotPassword()" style="width:100%">Enviar instruções</button>
+          <p id="forgotMsg" class="ok" style="margin-top:10px"></p>
+          <p style="margin-top:12px;font-size:13px;color:var(--muted)"><a href="#" onclick="go('auth');return false;" style="color:var(--primary)">← Voltar ao login</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-reset" class="page">
+      <div class="auth">
+        <div class="card">
+          <h2>Nova senha</h2>
+          <div class="field"><input id="newPass1" type="password" placeholder="Nova senha" class="field-input"></div>
+          <div class="field"><input id="newPass2" type="password" placeholder="Confirmar nova senha" class="field-input"></div>
+          <button class="btn p" onclick="resetPassword()" style="width:100%">Atualizar senha</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         APP (DASHBOARD)
+    ══════════════════════════════ -->
+    <section id="page-app" class="page">
+      <div class="app">
+
+        <!-- SIDEBAR -->
+        <aside class="side">
+          <div class="side-logo">🎙 my<span>PodFlow</span></div>
+          <div class="side-section-label">Principal</div>
+          <button onclick="showView('dashboard')">📊 Dashboard</button>
+          <button onclick="showView('upload')">⬆️ Novo episódio</button>
+          <button onclick="showView('history')">📋 Histórico</button>
+          <button onclick="showView('shorts')">🎬 Shorts</button>
+          <div class="side-divider"></div>
+          <div class="side-section-label">Conta</div>
+          <button onclick="showView('pix')">💳 Planos PIX</button>
+          <button onclick="showView('settings')">⚙️ Configurações</button>
+          <button onclick="showView('help')">💬 Ajuda</button>
+          <div class="side-divider"></div>
+          <button id="adminNavBtn" style="display:none;color:var(--gold)" onclick="showView('admin')">🔑 Admin PIX</button>
+          <button class="btn discord" style="margin-top:4px;width:100%;justify-content:center" onclick="openDiscord()">Discord</button>
+          <button onclick="logout()" style="color:var(--err);margin-top:4px">← Sair</button>
+        </aside>
+
+        <!-- MAIN -->
+        <div class="main">
+
+          <!-- DASHBOARD -->
+          <div id="view-dashboard" class="view">
+            <div class="view-title">Dashboard</div>
+            <div class="kpi">
+              <div class="kpi-card"><div class="kpi-val" id="kpiPlan" style="font-size:20px;color:var(--primary)">—</div><div class="kpi-label">Plano atual</div></div>
+              <div class="kpi-card"><div class="kpi-val" id="kpiMinutes">—</div><div class="kpi-label">Minutos usados</div></div>
+              <div class="kpi-card"><div class="kpi-val" id="kpiContents">—</div><div class="kpi-label">Conteúdos gerados</div></div>
+              <div class="kpi-card"><div class="kpi-val" id="kpiStatus" style="font-size:16px;color:var(--ok)">Ativa</div><div class="kpi-label">Status da conta</div></div>
+            </div>
+            <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn p" onclick="showView('upload')">⬆️ Novo episódio</button>
+              <button class="btn" onclick="showView('history')">📋 Ver histórico</button>
+              <button class="btn" onclick="showView('pix')">💳 Gerenciar plano</button>
+            </div>
+          </div>
+
+          <!-- UPLOAD -->
+          <div id="view-upload" class="view" style="display:none">
+            <div class="view-title">Novo episódio</div>
+            <div class="upload-zone">
+              <div class="up-icon">🎙</div>
+              <h3>Envie seu episódio</h3>
+              <p>Áudio (.mp3, .wav, .m4a, .aac, .ogg) ou Vídeo (.mp4, .webm)</p>
+              <div class="upload-inputs">
+                <input type="file" id="audioFile" accept=".mp3,.wav,.m4a,.aac,.ogg,.mp4,.webm" class="field-input">
+                <input id="sourceUrl" placeholder="ou cole link do YouTube / Spotify" class="field-input">
+                <input id="episodeTitle" placeholder="Título do episódio (opcional)" class="field-input">
+                <label class="toggle">
+                  <input type="checkbox" id="generateCaptionsToggle" checked>
+                  <span><strong>Legendas automáticas nos shorts</strong><br><span class="muted" style="font-size:13px">Legendas aumentam retenção e engajamento em TikTok/Reels.</span></span>
+                </label>
+                <button class="btn p lg" onclick="uploadAndStart()">🚀 Enviar e processar</button>
+              </div>
+            </div>
+            <p class="muted" id="uploadStatus" style="margin-top:14px;font-size:14px"></p>
+          </div>
+
+          <!-- HISTÓRICO -->
+          <div id="view-history" class="view" style="display:none">
+            <div class="view-title">Histórico de episódios</div>
+            <div id="historyList"></div>
+            <div class="result" id="resultBox" style="margin-top:14px"></div>
+          </div>
+
+          <!-- SHORTS -->
+          <div id="view-shorts" class="view" style="display:none">
+            <div class="view-title">Shorts gerados</div>
+            <div id="shortsList"></div>
+          </div>
+
+          <!-- PIX -->
+          <div id="view-pix" class="view" style="display:none">
+            <div class="view-title">💳 Pagamento PIX Manual</div>
+            <div class="pix">
+              <div class="card">
+                <label class="muted2" style="font-size:13px;font-weight:600;display:block;margin-bottom:8px">Escolha seu plano</label>
+                <select id="pixPlan" style="width:100%;padding:11px 14px;margin-bottom:14px;border-radius:var(--radius-sm);border:1px solid var(--line);background:rgba(0,0,0,.3);color:var(--text)">
+                  <option value="starter">Starter — R$39/mês</option>
+                  <option value="creator">Creator — R$99/mês</option>
+                  <option value="scale">Scale — R$399/mês</option>
+                </select>
+                <button class="btn p" style="width:100%" onclick="loadPix()">Gerar dados PIX</button>
+              </div>
+              <div class="card">
+                <p class="muted2" style="font-size:13px;margin:0 0 10px">QR Code PIX</p>
+                <img id="pixQr" style="max-width:160px;display:none;border-radius:10px;border:1px solid var(--line)">
+                <p class="muted2" style="font-size:13px;margin:12px 0 8px">Código copia e cola</p>
+                <textarea id="pixCode" rows="4" readonly style="font-family:'JetBrains Mono',monospace;font-size:12px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:var(--text);padding:10px;width:100%;resize:none"></textarea>
+                <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                  <button class="btn p" onclick="copyPix()">📋 Copiar código PIX</button>
+                  <button class="btn" onclick="markPaid()">✅ Já paguei</button>
+                  <button class="btn discord" onclick="openDiscord()">💬 Enviar comprovante</button>
+                </div>
+                <p id="pixMsg" class="ok" style="margin-top:8px;font-size:13px"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONFIGURAÇÕES -->
+          <div id="view-settings" class="view" style="display:none">
+            <div class="view-title">Configurações</div>
+            <div class="card" style="max-width:480px">
+              <div class="field"><input id="setName" placeholder="Seu nome completo" class="field-input"></div>
+              <div class="field"><input id="setPodcast" placeholder="Nome do seu podcast" class="field-input"></div>
+              <div class="field"><textarea id="setBio" placeholder="Bio / Sobre você" class="field-input" rows="3"></textarea></div>
+              <div style="display:flex;gap:8px">
+                <button class="btn p" onclick="saveProfile()">✓ Salvar perfil</button>
+                <button class="btn discord" onclick="openDiscord()">💬 Suporte Discord</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- AJUDA -->
+          <div id="view-help" class="view" style="display:none">
+            <div class="view-title">Ajuda e suporte</div>
+            <div class="card" style="max-width:500px;padding:28px">
+              <div style="font-size:32px;margin-bottom:16px">💬</div>
+              <h3 style="margin:0 0 8px">Suporte oficial via Discord</h3>
+              <p class="muted2" style="margin:0 0 20px;font-size:14px">O suporte do myPodFlow é feito via Discord. Nossa equipe responde rapidamente dúvidas, problemas técnicos e ativações de plano.</p>
+              <button class="btn discord lg" onclick="openDiscord()">Abrir Discord suporte →</button>
+              <p style="margin-top:16px;font-size:12px;color:var(--muted)">myPodFlow Technologies · Criado por Eslem Marques · © 2026</p>
+            </div>
+          </div>
+
+          <!-- ADMIN -->
+          <div id="view-admin" class="view" style="display:none">
+            <div class="view-title">Painel Admin <span class="admin-badge">🔑 PIX manual</span></div>
+            <p class="muted2" style="font-size:14px;margin-bottom:20px">Busque o cliente pelo email após ele clicar em "Já paguei" e enviar o comprovante no Discord.</p>
+            <div class="card" style="margin-bottom:14px;max-width:560px">
+              <div class="field"><input id="adminEmailSearch" type="email" placeholder="email@cliente.com" class="field-input"></div>
+              <button class="btn p" onclick="adminSearchUser()">🔍 Buscar usuário</button>
+              <div id="adminSearchErr" class="error" style="display:none;margin-top:8px"></div>
+              <div id="adminSearchOk" class="ok" style="display:none;margin-top:8px"></div>
+            </div>
+            <div id="adminUserCard" class="card" style="display:none;max-width:560px">
+              <h3 style="margin-top:0">Usuário encontrado</h3>
+              <p><strong>Nome:</strong> <span id="admName"></span></p>
+              <p><strong>Email:</strong> <span id="admEmail"></span></p>
+              <p><strong>Plano atual:</strong> <span id="admPlan"></span></p>
+              <p><strong>Status:</strong> <span id="admStatus"></span></p>
+              <p><strong>Última atualização plano:</strong> <span id="admPlanUpdated"></span></p>
+              <p><strong>PIX aprovado em:</strong> <span id="admPixAt"></span></p>
+              <div class="field" style="margin-top:12px">
+                <label class="muted" style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Pagamento em revisão (opcional)</label>
+                <select id="admPaymentSelect" style="width:100%;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--line);background:rgba(0,0,0,.3);color:var(--text)">
+                  <option value="">— Não vincular pagamento —</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="muted" style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Novo plano após confirmação do PIX</label>
+                <select id="admPlanSelect" style="width:100%;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--line);background:rgba(0,0,0,.3);color:var(--text)">
+                  <option value="starter">Starter</option>
+                  <option value="creator">Creator</option>
+                  <option value="scale">Scale</option>
+                  <option value="free">Free (reverter)</option>
+                </select>
+              </div>
+              <button class="btn p" onclick="adminApprovePix()">✅ Aprovar pagamento PIX</button>
+            </div>
+          </div>
+
+        </div><!-- /main -->
+      </div><!-- /app -->
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="wrap">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-brand">my<span>PodFlow</span> Technologies</div>
+          <div class="footer-credit" style="margin-top:4px">© 2026 myPodFlow. Criado por Eslem Marques — mypodflow.com.br</div>
+        </div>
+        <div class="footer-links">
+          <a href="#" onclick="go('plans');return false;">Planos</a>
+          <a href="#" onclick="go('faq');return false;">FAQ</a>
+          <a href="https://discord.gg/kzE62vDz4j" target="_blank" rel="noreferrer">Discord</a>
+          <a href="mailto:suporte@mypodflow.com.br">Suporte</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ══════════════════════════════
+       JAVASCRIPT — TODA LÓGICA ORIGINAL PRESERVADA
+  ══════════════════════════════ -->
+  <script>
+    (function oauthScrubUrl(){
+      try{
+        const q=new URLSearchParams(location.search);
+        let changed=false;
+        const ae=q.get("auth_error");
+        if(ae){
+          sessionStorage.setItem("mpf_auth_error", ae);
+          q.delete("auth_error");
+          changed=true;
+        }
+        const t=q.get("token"), u=q.get("user");
+        if(t){
+          sessionStorage.setItem("mpf_pending_token", t);
+          if(u) sessionStorage.setItem("mpf_pending_user", u);
+          q.delete("token"); q.delete("user");
+          changed=true;
+        }
+        if(changed){
+          const rest=q.toString();
+          const path=location.pathname||"/";
+          history.replaceState(null, "", rest ? path+"?"+rest : path);
+        }
+      }catch(e){ console.warn("[mpf oauth scrub]", e); }
+    })();
+
+    const API = location.hostname === "localhost" ? "http://localhost:3001" : "";
+    const DISCORD_URL = "https://discord.gg/kzE62vDz4j";
+    let authMode = "login";
+    let currentUser = null;
+    let currentPaymentId = null;
+    let currentContentId = null;
+    let adminSelectedUserId = null;
+
+    function getToken(){return localStorage.getItem("mpf_token")}
+    function setToken(v){localStorage.setItem("mpf_token",v)}
+    function clearSession(){localStorage.removeItem("mpf_token");localStorage.removeItem("mpf_user")}
+    function setUser(user){currentUser=user;localStorage.setItem("mpf_user",JSON.stringify(user))}
+    function loadUser(){try{return JSON.parse(localStorage.getItem("mpf_user")||"null")}catch{return null}}
+
+    async function api(method,path,body,isForm=false){
+      const headers={Authorization:getToken()?`Bearer ${getToken()}`:undefined};
+      if(!isForm) headers["Content-Type"]="application/json";
+      Object.keys(headers).forEach(k=>headers[k]===undefined&&delete headers[k]);
+      const res=await fetch(`${API}${path}`,{method,headers,body:isForm?body:(body?JSON.stringify(body):undefined)});
+      const data=await res.json().catch(()=>({}));
+      if(res.status===401){clearSession();currentUser=null}
+      if(!res.ok) throw new Error(data.error||`HTTP ${res.status}`);
+      return data;
+    }
+
+    function go(page,sub=""){
+      if(page==="app"&&!getToken()){authMode=sub||"login";page="auth"}
+      if(page==="forgot"||page==="reset"){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById(`page-${page}`).classList.add("active");return}
+      document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+      const el=document.getElementById(`page-${page}`);
+      if(el)el.classList.add("active");
+      document.querySelectorAll("[data-nav]").forEach(n=>n.classList.toggle("active",n.dataset.nav===page));
+      if(page==="auth")renderAuth(sub||authMode);
+      if(page==="plans")renderPlans();
+      if(page==="app")initApp();
+      window.scrollTo(0,0);
+    }
+
+    function renderAuth(mode){
+      authMode=mode;
+      const signup=mode==="signup";
+      document.getElementById("nameField").style.display=signup?"block":"none";
+      document.getElementById("authTitle").textContent=signup?"Criar conta":"Entrar";
+      document.getElementById("authSubtitle").textContent=signup?"Crie sua conta para começar":"Acesse sua conta para continuar.";
+      document.getElementById("authBtn").textContent=signup?"Criar conta →":"Entrar →";
+      document.getElementById("authSwitch").innerHTML=signup?'Já tem conta? <a href="#" onclick="toggleAuth();return false;" style="color:var(--primary);font-weight:600">Entrar</a>':'Não tem conta? <a href="#" onclick="toggleAuth();return false;" style="color:var(--primary);font-weight:600">Criar agora</a>';
+    }
+    function toggleAuth(){renderAuth(authMode==="login"?"signup":"login")}
+
+    async function submitAuth(){
+      const email=document.getElementById("emailInput").value.trim();
+      const password=document.getElementById("passwordInput").value;
+      const name=document.getElementById("nameInput").value.trim();
+      const err=document.getElementById("authError");
+      const btn=document.getElementById("authBtn");
+      err.style.display="none";
+      const oldTxt=btn.textContent;
+      btn.textContent="Aguarde...";btn.disabled=true;
+      try{
+        const endpoint=authMode==="signup"?"/api/auth/register":"/api/auth/login";
+        const payload=authMode==="signup"?{name,email,password}:{email,password};
+        const data=await api("POST",endpoint,payload);
+        setToken(data.token);setUser(data.user);refreshNavbar();go("app");
+      }catch(e){err.textContent=e.message;err.style.display="block"}
+      finally{btn.textContent=oldTxt;btn.disabled=false;}
+    }
+
+    function googleLogin(){location.href=`${API}/api/auth/google`}
+
+    async function forgotPassword(){
+      const email=document.getElementById("forgotEmail").value.trim();
+      const data=await api("POST","/api/auth/forgot-password",{email});
+      document.getElementById("forgotMsg").textContent=data.message||"Se o email existir, enviaremos instruções.";
+    }
+    async function resetPassword(){
+      const p1=document.getElementById("newPass1").value,p2=document.getElementById("newPass2").value;
+      if(p1!==p2) return alert("As senhas não coincidem.");
+      const token=new URLSearchParams(location.search).get("reset_token");
+      await api("POST","/api/auth/reset-password",{token,password:p1});
+      alert("Senha atualizada.");go("auth");
+    }
+    function logout(){clearSession();currentUser=null;refreshNavbar();go("landing")}
+
+    function refreshNavbar(){
+      const nav=document.getElementById("navAuth");
+      if(getToken()){
+        const adm=(currentUser&&currentUser.is_admin)?'<button class="btn" onclick="go(\'app\');showView(\'admin\')" style="border-color:rgba(245,158,11,.4);color:var(--gold)">🔑 Admin</button>':'';
+        nav.innerHTML=adm+'<button class="btn p" onclick="go(\'app\')">Dashboard →</button>';
+      }else nav.innerHTML='<button class="btn" onclick="go(\'auth\')">Entrar</button><button class="btn p" onclick="go(\'auth\',\'signup\')">Começar agora →</button>';
+    }
+
+    function renderPlans(){
+      const plans=[
+        {
+          id:"starter",name:"Starter",price:"39",featured:false,
+          tagline:"Ideal para começar com consistência.",
+          forWho:"Podcasters iniciantes ou quem quer testar a plataforma antes de escalar.",
+          bestFor:"Quem faz 1–4 episódios por mês e quer distribuir em múltiplos canais.",
+          features:[
+            {ok:true,text:"Transcrição com Whisper OpenAI"},
+            {ok:true,text:"Geração de blog SEO"},
+            {ok:true,text:"Thread para X / Twitter"},
+            {ok:true,text:"Newsletter básica"},
+            {ok:true,text:"Shorts com legenda (limitado)"},
+            {ok:true,text:"Histórico básico"},
+            {ok:false,text:"Shorts MP4 ilimitados"},
+            {ok:false,text:"Alto volume de upload"},
+          ]
+        },
+        {
+          id:"creator",name:"Creator",price:"99",featured:true,
+          tagline:"Para creators em crescimento ativo.",
+          forWho:"Creators que já publicam com regularidade e precisam de volume e todos os formatos.",
+          bestFor:"Quem faz 5–15 episódios por mês e quer escalar presença digital.",
+          features:[
+            {ok:true,text:"Tudo do Starter"},
+            {ok:true,text:"Mais minutos de transcrição"},
+            {ok:true,text:"Mais uploads por mês"},
+            {ok:true,text:"Todos os formatos de conteúdo"},
+            {ok:true,text:"Shorts MP4 com legenda"},
+            {ok:true,text:"Histórico completo"},
+            {ok:true,text:"Prioridade no processamento"},
+            {ok:false,text:"Suporte Discord prioritário"},
+          ]
+        },
+        {
+          id:"scale",name:"Scale",price:"399",featured:false,
+          tagline:"Para agências, equipes e creators de alto volume.",
+          forWho:"Agências de conteúdo, equipes de marketing ou creators com produção intensiva.",
+          bestFor:"Quem faz 15+ episódios por mês, gerencia múltiplos podcasts ou precisa de volume máximo.",
+          features:[
+            {ok:true,text:"Tudo do Creator"},
+            {ok:true,text:"Alto volume de processamento"},
+            {ok:true,text:"Prioridade máxima na fila"},
+            {ok:true,text:"Mais limites em todos os recursos"},
+            {ok:true,text:"Shorts MP4 ilimitados"},
+            {ok:true,text:"Suporte via Discord prioritário"},
+            {ok:true,text:"Indicado para múltiplos shows"},
+            {ok:true,text:"Melhor custo-benefício em escala"},
+          ]
+        }
+      ];
+
+      document.getElementById("plansGrid").innerHTML=plans.map(p=>`
+        <div class="plan-card ${p.featured?"featured":""}">
+          <div class="plan-name">${p.name}</div>
+          <div class="plan-price"><sup>R$</sup>${p.price}</div>
+          <div class="plan-period">por mês · via PIX</div>
+          <div class="plan-tagline">${p.tagline}</div>
+
+          <div class="plan-for">
+            <div class="plan-for-label">Para quem é</div>
+            <div class="plan-for-text">${p.forWho}</div>
+          </div>
+
+          <div class="plan-divider"></div>
+          <div class="plan-section-label">O que inclui</div>
+          <ul class="plan-features">
+            ${p.features.map(f=>`<li><span class="${f.ok?"chk":"x"}">${f.ok?"✓":"×"}</span>${f.text}</li>`).join("")}
+          </ul>
+
+          <div class="plan-divider"></div>
+          <div class="plan-for" style="margin-bottom:16px">
+            <div class="plan-for-label">Melhor escolha para</div>
+            <div class="plan-for-text">${p.bestFor}</div>
+          </div>
+
+          <div class="plan-cta">
+            <button class="btn ${p.featured?"p":""}" onclick="go('auth','signup')" style="width:100%;padding:13px;font-size:15px;font-weight:600">
+              ${p.featured?"🚀 ":""}Escolher ${p.name}
+            </button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function showView(id, opts){
+      opts=opts||{};
+      document.querySelectorAll(".view").forEach(v=>v.style.display="none");
+      // sidebar active state
+      document.querySelectorAll(".side button").forEach(b=>{
+        b.classList.remove("active");
+        if(b.getAttribute("onclick")&&b.getAttribute("onclick").includes(`'${id}'`)) b.classList.add("active");
+      });
+      document.getElementById(`view-${id}`).style.display="block";
+      if(id==="history") loadHistory();
+      if(id==="dashboard" && !opts.skipUsageLoad) loadUsage();
+      if(id==="shorts") loadShorts();
+      if(id==="admin") resetAdminPanel();
+    }
+
+    let __initAppPromise=null;
+    function initApp(){
+      if(__initAppPromise) return __initAppPromise;
+      __initAppPromise=(async()=>{
+        try{
+          if(!getToken()){ go("auth"); return; }
+          const data=await api("GET","/api/auth/me");
+          setUser(data.user);
+          document.getElementById("adminNavBtn").style.display=data.user.is_admin?"block":"none";
+          refreshNavbar();
+          document.getElementById("setName").value=data.user.name||"";
+          document.getElementById("setPodcast").value=data.user.podcast_name||"";
+          document.getElementById("setBio").value=data.user.bio||"";
+          showView("dashboard", {skipUsageLoad:true});
+          await loadUsage();
+        }catch(e){
+          console.warn("[initApp]", e);
+          clearSession();
+          currentUser=null;
+          refreshNavbar();
+          go("auth");
+        }finally{
+          __initAppPromise=null;
+        }
+      })();
+      return __initAppPromise;
+    }
+
+    async function loadUsage(){
+      const usage=await api("GET","/api/users/usage");
+      document.getElementById("kpiPlan").textContent=usage.planName;
+      document.getElementById("kpiMinutes").textContent=`${usage.minutesUsed}/${usage.minutesLimit}`;
+      document.getElementById("kpiContents").textContent=usage.contentsGenerated;
+      const st=usage.planStatus||"—";
+      document.getElementById("kpiStatus").textContent=st==="pending_pix_review"?"Aguardando PIX":st==="active"?"Ativa":st==="free"?"Free":st;
+    }
+
+    function resetAdminPanel(){
+      adminSelectedUserId=null;
+      document.getElementById("adminUserCard").style.display="none";
+      document.getElementById("adminSearchErr").style.display="none";
+      document.getElementById("adminSearchOk").style.display="none";
+      document.getElementById("admPaymentSelect").innerHTML='<option value="">— Não vincular pagamento —</option>';
+    }
+
+    function fmtUnix(ts){
+      if(!ts)return "—";
+      try{return new Date(Number(ts)*1000).toLocaleString("pt-BR")}catch{return "—"}
+    }
+
+    async function adminSearchUser(){
+      const email=document.getElementById("adminEmailSearch").value.trim().toLowerCase();
+      const errEl=document.getElementById("adminSearchErr");
+      const okEl=document.getElementById("adminSearchOk");
+      errEl.style.display="none";okEl.style.display="none";
+      if(!email){errEl.textContent="Informe um email.";errEl.style.display="block";return;}
+      try{
+        const data=await api("GET",`/api/admin/users/by-email?email=${encodeURIComponent(email)}`);
+        const u=data.user;
+        adminSelectedUserId=u.id;
+        document.getElementById("admName").textContent=u.name||"—";
+        document.getElementById("admEmail").textContent=u.email||"—";
+        document.getElementById("admPlan").textContent=u.plan_id||"—";
+        document.getElementById("admStatus").textContent=u.plan_status||"—";
+        document.getElementById("admPlanUpdated").textContent=fmtUnix(u.plan_updated_at);
+        document.getElementById("admPixAt").textContent=fmtUnix(u.pix_approved_at);
+        const paySel=document.getElementById("admPaymentSelect");
+        paySel.innerHTML='<option value="">— Não vincular pagamento —</option>';
+        (data.pendingPayments||[]).forEach(p=>{
+          paySel.innerHTML+=`<option value="${p.id}">#${p.id} · ${p.status} · R$ ${(p.amount_cents/100).toFixed(2)}</option>`;
+        });
+        document.getElementById("adminUserCard").style.display="block";
+        okEl.textContent="Usuário carregado.";
+        okEl.style.display="block";
+      }catch(e){
+        errEl.textContent=e.message;
+        errEl.style.display="block";
+        document.getElementById("adminUserCard").style.display="none";
+      }
+    }
+
+    async function adminApprovePix(){
+      if(!adminSelectedUserId)return alert("Busque um usuário primeiro.");
+      const planId=document.getElementById("admPlanSelect").value;
+      const paymentSel=document.getElementById("admPaymentSelect").value;
+      const paymentId=paymentSel?parseInt(paymentSel,10):undefined;
+      if(!confirm(`Confirmar liberação do plano «${planId}» para este usuário? Esta ação grava auditoria no servidor.`))return;
+      try{
+        const body={planId};
+        if(paymentId)body.paymentId=paymentId;
+        const r=await api("POST",`/api/admin/users/${adminSelectedUserId}/approve-pix`,body);
+        alert(r.message||"Plano atualizado.");
+        await adminSearchUser();
+        await loadUsage();
+      }catch(e){alert("Erro: "+e.message)}
+    }
+
+    async function saveProfile(){
+      const btns=Array.from(document.querySelectorAll("#view-settings .btn.p"));
+      btns.forEach(b=>{b.dataset.old=b.textContent;b.textContent="Salvando...";b.disabled=true;});
+      try{
+        await api("PUT","/api/users/me",{name:document.getElementById("setName").value,podcastName:document.getElementById("setPodcast").value,bio:document.getElementById("setBio").value});
+        alert("Perfil salvo.");
+      }finally{
+        btns.forEach(b=>{b.textContent=b.dataset.old||"Salvar perfil";b.disabled=false;});
+      }
+    }
+
+    async function uploadAndStart(){
+      const submitBtn=document.querySelector("#view-upload .btn.p");
+      const oldTxt=submitBtn.textContent;
+      submitBtn.textContent="🔄 Gerando conteúdo...";
+      submitBtn.disabled=true;
+      const file=document.getElementById("audioFile").files[0];
+      const sourceUrl=document.getElementById("sourceUrl").value.trim();
+      const title=document.getElementById("episodeTitle").value || (file ? file.name : "Conteúdo por URL");
+      const generateCaptions=document.getElementById("generateCaptionsToggle").checked;
+      let up;
+      try{
+        if(file){
+          const fd=new FormData();
+          fd.append("audio",file);
+          fd.append("title",title);
+          fd.append("generateCaptions", String(generateCaptions));
+          up=await api("POST","/api/uploads/file",fd,true);
+        }else if(sourceUrl){
+          up=await api("POST","/api/uploads/url",{url:sourceUrl,title,generateCaptions});
+        }else{
+          return alert("Selecione um arquivo ou informe um link.");
+        }
+        currentContentId=up.contentId;
+        document.getElementById("uploadStatus").textContent="✅ Upload concluído. Iniciando IA...";
+        await api("POST",`/api/contents/start/${currentContentId}`,{generate_captions:generateCaptions});
+        pollStatus();
+      }catch(e){
+        document.getElementById("uploadStatus").textContent=`❌ Erro: ${e.message}`;
+      }finally{
+        submitBtn.textContent=oldTxt;
+        submitBtn.disabled=false;
+      }
+    }
+
+    async function pollStatus(){
+      if(!currentContentId) return;
+      const timer=setInterval(async()=>{
+        try{
+          const s=await api("GET",`/api/contents/status/${currentContentId}`);
+          document.getElementById("uploadStatus").textContent=`⚡ ${s.content.status_message||s.content.status} (${s.content.progress||0}%)`;
+          if(s.content.status==="done"||s.content.status==="error"){clearInterval(timer);loadHistory();showView("history")}
+        }catch(e){clearInterval(timer);document.getElementById("uploadStatus").textContent=e.message}
+      },2000);
+    }
+
+    async function loadHistory(){
+      const data=await api("GET","/api/contents/history");
+      const list=document.getElementById("historyList");
+      const contents=data.contents||[];
+      if(!contents.length){
+        list.innerHTML=`<div class="empty-state"><div class="empty-icon">📭</div><h3>Nenhum episódio ainda</h3><p>Envie seu primeiro episódio para começar a gerar conteúdo.</p><button class="btn p" onclick="showView('upload')">⬆️ Enviar episódio</button></div>`;
+        return;
+      }
+      list.innerHTML=contents.map(c=>{
+        const stMap={done:"done",processing:"processing",error:"error"};
+        const stLabel={done:"Concluído",processing:"Processando",error:"Erro"};
+        const cls=stMap[c.status]||"";
+        const lbl=stLabel[c.status]||"Pendente";
+        return `<div class="history-item">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <strong>${c.title||"Sem título"}</strong>
+            <span class="status-pill ${cls}">${lbl}</span>
+          </div>
+          <div class="progress" style="margin-bottom:8px"><span style="width:${Math.max(0,Math.min(100,Number(c.progress||0)))}%"></span></div>
+          <div class="muted" style="font-size:13px;margin-bottom:8px">${c.status_message||""}</div>
+          ${c.status==="error"?`<div class="error" style="margin-bottom:8px">${c.error_message||"Falha no processamento."}</div><button class="btn discord sm" onclick="openDiscord()">💬 Suporte Discord</button>`:""}
+          <div style="margin-top:10px"><button class="btn sm" onclick="openResult(${c.id})">📂 Abrir resultados</button></div>
+        </div>`;
+      }).join("");
+    }
+
+    function toLines(v){
+      if(Array.isArray(v)) return v.join("\n\n");
+      return String(v||"");
+    }
+    function copyText(v){
+      navigator.clipboard.writeText(String(v||""));
+      alert("Copiado!");
+    }
+    function downloadText(filename,content){
+      const blob=new Blob([String(content||"")],{type:"text/plain;charset=utf-8"});
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(blob);
+      a.download=filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+    function safeJsonParse(v, fallback){
+      try{return JSON.parse(v)}catch{return fallback}
+    }
+    function renderShortCards(shorts){
+      if(!shorts.length) return `<div class="empty-state"><div class="empty-icon">🎬</div><h3>Nenhum short gerado</h3><p>Este episódio não gerou shorts ou o processamento ainda está em andamento.</p></div>`;
+      return shorts.map(s=>`<div class="card short-card" style="margin-bottom:12px">
+        <strong style="font-size:15px">${s.title||"Short"}</strong>
+        <p class="muted" style="font-size:13px;margin:4px 0 10px">${s.hook_text||s.hook||""}</p>
+        <video controls src="${s.video_url||s.public_url||s.file_path||""}"></video>
+        <p class="muted" style="font-size:12px;margin:8px 0">⏱ ${s.start_time||"-"} – ${s.end_time||"-"} · ${Math.round(Number(s.duration_seconds||0))}s</p>
+        <div class="copy-row">
+          <a class="btn sm" href="${s.video_url||s.public_url||s.file_path||"#"}" download target="_blank">⬇️ Baixar MP4</a>
+          <button class="btn sm" onclick='copyText(${JSON.stringify(String(s.caption||""))})'>📋 Copiar legenda</button>
+          <button class="btn sm" onclick='copyText(${JSON.stringify(String(s.title||""))})'>📋 Copiar título</button>
+        </div>
+      </div>`).join("");
+    }
+    async function openResult(id){
+      const data=await api("GET",`/api/contents/result/${id}`);
+      const outputs=data.outputs||{};
+      const tabs=[
+        {id:"transcricao",label:"📄 Transcrição",content:outputs.transcript?.content||data.transcription?.cleaned_text||""},
+        {id:"blog",label:"📝 Blog",content:outputs.blog?.content||""},
+        {id:"thread",label:"🧵 Thread",content:toLines(outputs.thread?.content||"")},
+        {id:"newsletter",label:"📧 Newsletter",content:outputs.newsletter?.content||""},
+        {id:"shorts",label:"🎬 Shorts",content:renderShortCards(data.shorts||[]),isHtml:true},
+        {id:"hooks",label:"🪝 Hooks",content:toLines(safeJsonParse(outputs.hooks?.content||"[]",[]))},
+        {id:"resumo",label:"📋 Resumo",content:outputs.resumo?.content||""}
+      ];
+      const tabBtns=tabs.map((t,i)=>`<button class="btn sm ${i===0?"p":""}" data-r-tab="${t.id}" onclick="setResultTab('${t.id}')">${t.label}</button>`).join("");
+      const panels=tabs.map((t,i)=>`<div class="result-panel" data-r-panel="${t.id}" style="display:${i===0?"block":"none"}">
+        ${t.id!=="shorts"?`<div class="copy-row"><button class="btn sm" onclick='copyText(${JSON.stringify(String(t.content||""))})'>📋 Copiar</button><button class="btn sm" onclick='downloadText("${t.id}.txt", ${JSON.stringify(String(t.content||""))})'>⬇️ Baixar</button></div><pre>${String(t.content||"").replace(/</g,"&lt;")}</pre>`:t.content}
+      </div>`).join("");
+      document.getElementById("resultBox").innerHTML=`<h3 style="margin:0 0 14px;font-size:18px;font-weight:800">Resultados</h3><div class="result-tabs">${tabBtns}</div>${panels}`;
+      renderShorts(data.shorts||[]);
+    }
+    function setResultTab(id){
+      document.querySelectorAll("[data-r-tab]").forEach(b=>b.classList.toggle("p",b.getAttribute("data-r-tab")===id));
+      document.querySelectorAll("[data-r-panel]").forEach(p=>p.style.display=p.getAttribute("data-r-panel")===id?"block":"none");
+    }
+
+    function renderShorts(shorts){
+      const box=document.getElementById("shortsList");
+      if(!box) return;
+      if(!shorts.length){
+        box.innerHTML=`<div class="empty-state"><div class="empty-icon">🎬</div><h3>Nenhum short disponível</h3><p>Os shorts aparecerão aqui após o processamento de um episódio.</p><button class="btn p" onclick="showView('upload')">⬆️ Enviar episódio</button></div>`;
+        return;
+      }
+      box.innerHTML=shorts.map(s=>`<div class="card short-card" style="margin-bottom:12px">
+        <strong>${s.title||"Short"}</strong>
+        <p class="muted" style="font-size:13px">${s.hook_text||s.hook||""}</p>
+        <video controls src="${s.video_url||s.public_url||s.file_path||""}"></video>
+        <p class="muted" style="font-size:12px">${s.start_time||"-"} – ${s.end_time||"-"}</p>
+        <div class="copy-row">
+          <a class="btn sm" href="${s.video_url||s.public_url||s.file_path||"#"}" download target="_blank">⬇️ Baixar MP4</a>
+          <button class="btn sm" onclick='copyText(${JSON.stringify(String(s.caption||""))})'>📋 Copiar legenda</button>
+          <button class="btn sm" onclick='copyText(${JSON.stringify(String(s.title||""))})'>📋 Copiar título</button>
+        </div>
+      </div>`).join("");
+    }
+
+    async function loadShorts(){
+      const data=await api("GET","/api/contents/history");
+      if(!data.contents?.length){renderShorts([]);return;}
+      const latest=data.contents.find(c=>c.status==="done");
+      if(!latest){renderShorts([]);return;}
+      const result=await api("GET",`/api/contents/result/${latest.id}`);
+      renderShorts(result.shorts||[]);
+    }
+
+    async function loadPix(){
+      const btn=document.querySelector("#view-pix .btn.p");
+      const old=btn.textContent;btn.textContent="🔄 Gerando PIX...";btn.disabled=true;
+      const planId=document.getElementById("pixPlan").value;
+      try{
+        const data=await api("POST","/api/billing/pix-intent",{planId});
+        currentPaymentId=data.paymentId;
+        const qr=document.getElementById("pixQr");
+        qr.src=data.pixQrCode.startsWith("data:")?data.pixQrCode:`data:image/png;base64,${data.pixQrCode}`;
+        qr.style.display="block";
+        document.getElementById("pixCode").value=data.pixCopyPaste;
+        document.getElementById("pixMsg").textContent="✅ Use o PIX e depois clique em 'Já paguei'.";
+      }catch(e){
+        document.getElementById("pixMsg").textContent=`❌ Erro: ${e.message}`;
+      }finally{
+        btn.textContent=old;btn.disabled=false;
+      }
+    }
+    function copyPix(){
+      navigator.clipboard.writeText(document.getElementById("pixCode").value||"");
+      document.getElementById("pixMsg").textContent="✅ Código PIX copiado!";
+    }
+    async function markPaid(){
+      const btns=Array.from(document.querySelectorAll("#view-pix .btn"));
+      const btn=btns.find(b=>b.textContent.includes("paguei"));
+      if(!btn) return;
+      const old=btn.textContent;btn.textContent="⏳ Enviando...";btn.disabled=true;
+      if(!currentPaymentId){btn.textContent=old;btn.disabled=false;return alert("Gere o PIX primeiro.");}
+      try{
+        const data=await api("POST","/api/billing/i-paid",{paymentId:currentPaymentId});
+        document.getElementById("pixMsg").textContent=data.message;
+        openDiscord();
+      }catch(e){
+        document.getElementById("pixMsg").textContent=`❌ Erro: ${e.message}`;
+      }finally{
+        btn.textContent=old;btn.disabled=false;
+      }
+    }
+    function openDiscord(){window.open(DISCORD_URL,"_blank")}
+
+    (function boot(){
+      refreshNavbar();
+      renderPlans();
+      const pendingErr=sessionStorage.getItem("mpf_auth_error");
+      if(pendingErr){
+        sessionStorage.removeItem("mpf_auth_error");
+        try{ alert(decodeURIComponent(pendingErr)); }catch{ alert(pendingErr); }
+      }
+      let token=sessionStorage.getItem("mpf_pending_token");
+      let userStr=sessionStorage.getItem("mpf_pending_user");
+      if(token){
+        sessionStorage.removeItem("mpf_pending_token");
+        sessionStorage.removeItem("mpf_pending_user");
+      }
+      const params=new URLSearchParams(location.search);
+      const resetToken=params.get("reset_token");
+      if(!token) token=params.get("token");
+      if(!userStr) userStr=params.get("user");
+      if(token&&userStr){
+        try{
+          setToken(token);
+          setUser(JSON.parse(userStr));
+        }catch(e){
+          console.warn("[mpf boot user json]", e);
+          clearSession();
+          refreshNavbar();
+          go("auth");
+          return;
+        }
+        refreshNavbar();
+        go("app");
+        return;
+      }
+      if(token&&!userStr){
+        setToken(token);
+        history.replaceState({}, "", location.pathname||"/");
+        api("GET","/api/auth/me").then(d=>{
+          setUser(d.user);
+          refreshNavbar();
+          go("app");
+        }).catch(()=>{clearSession();refreshNavbar();go("auth")});
+        return;
+      }
+      if(resetToken){
+        history.replaceState({}, "", `/?reset_token=${encodeURIComponent(resetToken)}`);
+        go("reset");
+        return;
+      }
+      const storedToken=getToken(),storedUser=loadUser();
+      if(storedToken&&storedUser){ currentUser=storedUser; refreshNavbar(); go("app"); }
+    })();
+  </script>
+</body>
+</html>

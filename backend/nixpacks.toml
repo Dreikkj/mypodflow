@@ -1,0 +1,11 @@
+[phases.setup]
+aptPkgs = ["python3", "make", "g++", "libatomic1"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = ["npm rebuild sqlite3 || true"]
+
+[start]
+cmd = "node server.js"

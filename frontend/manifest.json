@@ -1,0 +1,14 @@
+{
+  "name": "myPodFlow",
+  "short_name": "myPodFlow",
+  "description": "Transforme seu podcast em conteúdo para todos os canais",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06060f",
+  "theme_color": "#6c63ff",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "business"],
+  "lang": "pt-BR",
+  "scope": "/",
+  "author": "Eslem Marques"
+}

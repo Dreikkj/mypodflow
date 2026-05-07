@@ -1,0 +1,10 @@
+.env
+.env.*
+*.env
+backend/.env*
+frontend/.env*
+node_modules/
+uploads/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
