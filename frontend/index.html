@@ -1015,7 +1015,11 @@
       }catch(e){ console.warn("[mpf oauth scrub]", e); }
     })();
 
-    const API = location.hostname === "localhost" ? "http://localhost:3001" : "";
+    const API =
+  location.hostname.includes("localhost") ||
+  location.hostname === "127.0.0.1"
+    ? "http://localhost:3001"
+    : "https://api.mypodflow.com.br";
     const DISCORD_URL = "https://discord.gg/kzE62vDz4j";
     let authMode = "login";
     let currentUser = null;
