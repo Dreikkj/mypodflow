@@ -11,6 +11,10 @@ const { ensureUserPlanValidity } = require("../services/planLifecycle");
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
+function isAdminEmail(email) {
+  return email && process.env.ADMIN_EMAIL && email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase();
+}
+
 function sign(user) {
   return jwt.sign(
     { id: user.id, email: user.email, plan: user.plan_id, isAdmin: Boolean(user.is_admin) },
@@ -36,8 +40,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.
           if (!user) {
             const randomPassword = `google:${crypto.randomBytes(24).toString("hex")}`;
             const created = await run(
-              "INSERT INTO users (name,email,password_hash,plan_id,email_verified,avatar_url) VALUES (?,?,?,?,?,?)",
-              [profile.displayName || "Usuário", email, randomPassword, "free", 1, profile.photos?.[0]?.value || null]
+              "INSERT INTO users (name,email,password_hash,plan_id,email_verified,avatar_url,is_admin) VALUES (?,?,?,?,?,?,?)",
+              [profile.displayName || "Usuário", email, randomPassword, "free", 1, profile.photos?.[0]?.value || null, isAdminEmail(email) ? 1 : 0] 
             );
             user = await get("SELECT * FROM users WHERE id=?", [created.id]);
           }
